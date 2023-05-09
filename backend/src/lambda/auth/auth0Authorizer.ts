@@ -5,12 +5,7 @@ import { verify, decode } from 'jsonwebtoken'
 import { createLogger } from '../../utils/logger'
 import { Jwt } from '../../auth/Jwt'
 import { JwtPayload } from '../../auth/JwtPayload'
-import * as AWS from 'aws-sdk'
 import axios from 'axios'
-
-const client = new AWS.SecretsManager()
-
-let cachedSecret: string = ''
 
 const logger = createLogger('auth')
 

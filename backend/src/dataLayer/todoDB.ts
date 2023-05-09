@@ -1,5 +1,5 @@
 import * as AWS from 'aws-sdk'
-import * as AWSXRay from 'aws-xray-sdk-core'
+var AWSXRay = require('aws-xray-sdk')
 import { createLogger } from '../utils/logger'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { TodoItem } from '../models/TodoItem'
@@ -10,7 +10,7 @@ const logger = createLogger('todoAccess')
 
 export class TodoAccess {
   constructor(
-    private readonly docClient: DocumentClient = XAWS.DynamoDB(),
+    private readonly docClient: DocumentClient = XAWS.DynamoDB.DocumentClient(),
     private readonly todosTable = process.env.TODOS_TABLE
   ) {}
 
