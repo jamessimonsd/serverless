@@ -8,6 +8,7 @@ import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
 const logger = createLogger('TodoAccess')
 const attachmentUtils = new AttachmentUtils()
 const todoAccess = new TodoAccess()
+
 export const getTodosForUser = async (userId: string) => {
   return todoAccess.getTodos(userId)
 }

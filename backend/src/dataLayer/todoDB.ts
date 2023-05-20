@@ -1,46 +1,32 @@
 import * as AWS from 'aws-sdk'
+const AWSXRay = require('aws-xray-sdk')
 import { createLogger } from '../utils/logger'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { TodoItem } from '../models/TodoItem'
 import { TodoUpdate } from '../models/TodoUpdate'
 
+const XAWS = AWSXRay.captureAWS(AWS)
 const logger = createLogger('todoAccess')
 
 export class TodoAccess {
   constructor(
-    private readonly docClient: DocumentClient = new AWS.DynamoDB.DocumentClient(),
-    private readonly todosTable = process.env.TODOS_TABLE,
-    private readonly userIndex = process.env.TODOS_USER_INDEX
+    private readonly docClient: DocumentClient = new XAWS.DynamoDB.DocumentClient(),
+    private readonly todosTable = process.env.TODOS_TABLE
   ) {}
 
   async getTodos(userId: string): Promise<TodoItem[]> {
     logger.info('Getting all todo items')
-    try {
-      console.log(this.docClient)
-      return []
-    } catch (error) {
-      logger.error('FAILED TO GET ALL TODOS - DATA:', {
-        userId,
-        tableName: this.todosTable,
-        indexName: this.userIndex
-      })
-    }
-  }
 
-  async getTodo(userId: string, todoId: string): Promise<TodoItem> {
-    logger.info(`Getting todo item: ${todoId}`)
     const result = await this.docClient
       .query({
         TableName: this.todosTable,
-        KeyConditionExpression: 'userId = :userId and todoId = :todoId',
+        KeyConditionExpression: 'userId = :userId',
         ExpressionAttributeValues: {
-          ':userId': userId,
-          ':todoId': todoId
+          ':userId': userId
         }
       })
       .promise()
-    const todoItem = result.Items[0]
-    return todoItem as TodoItem
+    return result.Items as TodoItem[]
   }
 
   async createTodo(newTodo: TodoItem): Promise<TodoItem> {
@@ -90,16 +76,23 @@ export class TodoAccess {
     todoId: string,
     bucketName: string
   ): Promise<void> {
-    await this.docClient
-      .update({
-        TableName: this.todosTable,
-        Key: { userId, todoId },
-        ConditionExpression: 'attribute_exists(todoId)',
-        UpdateExpression: 'set attachmentUrl = :attachmentUrl',
-        ExpressionAttributeValues: {
-          ':attachmentUrl': `https://${bucketName}.s3.amazonaws.com/${todoId}`
-        }
-      })
-      .promise()
+    try {
+      await this.docClient
+        .update({
+          TableName: this.todosTable,
+          Key: { userId, todoId },
+          ConditionExpression: 'attribute_exists(todoId)',
+          UpdateExpression: 'set attachmentUrl = :attachmentUrl',
+          ExpressionAttributeValues: {
+            ':attachmentUrl': `https://${bucketName}.s3.amazonaws.com/${todoId}`
+          }
+        })
+        .promise()
+      logger.info(
+        `Updating image url for a todo item: https://${bucketName}.s3.amazonaws.com/${todoId}`
+      )
+    } catch (error) {
+      logger.error(error)
+    }
   }
 }
