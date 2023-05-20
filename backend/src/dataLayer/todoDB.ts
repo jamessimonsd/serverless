@@ -1,31 +1,30 @@
 import * as AWS from 'aws-sdk'
-var AWSXRay = require('aws-xray-sdk')
 import { createLogger } from '../utils/logger'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { TodoItem } from '../models/TodoItem'
 import { TodoUpdate } from '../models/TodoUpdate'
 
-const XAWS = AWSXRay.captureAWS(AWS)
 const logger = createLogger('todoAccess')
 
 export class TodoAccess {
   constructor(
-    private readonly docClient: DocumentClient = XAWS.DynamoDB.DocumentClient(),
-    private readonly todosTable = process.env.TODOS_TABLE
+    private readonly docClient: DocumentClient = new AWS.DynamoDB.DocumentClient(),
+    private readonly todosTable = process.env.TODOS_TABLE,
+    private readonly userIndex = process.env.TODOS_USER_INDEX
   ) {}
 
   async getTodos(userId: string): Promise<TodoItem[]> {
     logger.info('Getting all todo items')
-    const result = await this.docClient
-      .query({
-        TableName: this.todosTable,
-        KeyConditionExpression: 'userId = :userId',
-        ExpressionAttributeValues: {
-          ':userId': userId
-        }
+    try {
+      console.log(this.docClient)
+      return []
+    } catch (error) {
+      logger.error('FAILED TO GET ALL TODOS - DATA:', {
+        userId,
+        tableName: this.todosTable,
+        indexName: this.userIndex
       })
-      .promise()
-    return result.Items as TodoItem[]
+    }
   }
 
   async getTodo(userId: string, todoId: string): Promise<TodoItem> {

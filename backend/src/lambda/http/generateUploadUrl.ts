@@ -16,7 +16,7 @@ const s3 = new XAWS.S3({
 })
 
 import * as middy from 'middy'
-import { cors } from 'middy/middlewares'
+import { cors, httpErrorHandler } from 'middy/middlewares'
 import { TodoAccess } from '../../dataLayer/todoDB'
 
 const todoAccess = new TodoAccess()
@@ -51,7 +51,7 @@ export const handler = middy(
     }
   }
 )
-handler.use(
+handler.use(httpErrorHandler()).use(
   cors({
     credentials: true
   })

@@ -2,7 +2,7 @@ import 'source-map-support/register'
 
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 
-import { cors } from 'middy/middlewares'
+import { cors, httpErrorHandler } from 'middy/middlewares'
 import * as middy from 'middy'
 import { deleteTodo } from '../../businessLogic/todos'
 import { getUserId } from '../utils'
@@ -24,7 +24,7 @@ export const handler = middy(
   }
 )
 
-handler.use(
+handler.use(httpErrorHandler()).use(
   cors({
     credentials: true
   })
