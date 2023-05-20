@@ -3,6 +3,7 @@ import * as uuid from 'uuid'
 import { TodoAccess } from '../dataLayer/todoDB'
 import { createLogger } from '../utils/logger'
 import { AttachmentUtils } from '../helpers/attachmentUtils'
+import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
 
 const logger = createLogger('TodoAccess')
 const attachmentUtils = new AttachmentUtils()
@@ -23,4 +24,16 @@ export const createTodo = async (userId: string, todo: CreateTodoRequest) => {
     attachmentUrl,
     ...todo
   })
+}
+
+export const updateTodo = async (
+  userId: string,
+  todoId: string,
+  todo: UpdateTodoRequest
+) => {
+  return todoAccess.updateTodo(userId, todoId, todo)
+}
+
+export const deleteTodo = async (userId: string, todoId: string) => {
+  return todoAccess.deleteTodo(userId, todoId)
 }
